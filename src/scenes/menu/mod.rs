@@ -1,5 +1,5 @@
-pub use plugin::MenuScenePlugin;
+pub use menu_scene_plugin::MenuScenePlugin;
 
-mod plugin;
+mod menu_scene_plugin;
 mod components;
 
