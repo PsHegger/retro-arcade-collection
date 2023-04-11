@@ -18,3 +18,8 @@ pub struct Paddle {
 pub struct Ball {
     pub is_attached: bool
 }
+
+#[derive(Component)]
+pub struct Block {
+    pub score: i32
+}

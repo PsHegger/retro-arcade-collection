@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::scenes::breakout::components::{Paddle, Renderable};
 use crate::scenes::breakout::constants::PLAY_AREA_WIDTH;
 
-pub fn keyboard_input(
+pub fn paddle_keyboard_input(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
     mut query: Query<(&mut Renderable, &Paddle)>,

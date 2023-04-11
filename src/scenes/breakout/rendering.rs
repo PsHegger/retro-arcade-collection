@@ -21,7 +21,7 @@ pub fn scale_handler(
         let scaled_pos_x = renderable.pos.x * scale;
         let scaled_pos_y = renderable.pos.y * scale;
         sprite.custom_size = Some(Vec2::new(scaled_width, scaled_height));
-        transform.translation = Vec3::new(scaled_pos_x, scaled_pos_y, 0.0);
+        transform.translation = Vec3::new(scaled_pos_x, scaled_pos_y, transform.translation.z);
     }
 }
 
@@ -32,6 +32,6 @@ pub fn renderable_transform_handler(
     for (mut transform, renderable) in query.iter_mut() {
         let scaled_pos_x = renderable.pos.x * viewport_scale.scale;
         let scaled_pos_y = renderable.pos.y * viewport_scale.scale;
-        transform.translation = Vec3::new(scaled_pos_x, scaled_pos_y, 0.0);
+        transform.translation = Vec3::new(scaled_pos_x, scaled_pos_y, transform.translation.z);
     }
 }

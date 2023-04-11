@@ -1,7 +1,7 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
-use crate::scenes::breakout::components::{Ball, Paddle, Renderable};
+use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable};
 use crate::scenes::breakout::constants::*;
 use crate::scenes::breakout::input::*;
 use crate::scenes::breakout::logic::*;
@@ -15,7 +15,7 @@ impl Plugin for BreakoutScenePlugin {
         app.insert_resource(ViewportScale::default())
             .add_startup_system(setup_scene)
             .add_system(scale_handler)
-            .add_system(keyboard_input)
+            .add_system(paddle_keyboard_input)
             .add_system(move_ball_with_paddle)
             .add_system(renderable_transform_handler.after(move_ball_with_paddle));
     }
@@ -33,7 +33,7 @@ fn setup_scene(mut commands: Commands) {
                 custom_size: Some(Vec2::new(1.0, PLAY_AREA_HEIGHT)),
                 ..default()
             },
-            transform: Transform::from_xyz(-border_pos, 0.0, 0.0),
+            transform: Transform::from_xyz(-border_pos, 0.0, 1.0),
             ..default()
         },
         Renderable {
@@ -50,7 +50,7 @@ fn setup_scene(mut commands: Commands) {
                 custom_size: Some(Vec2::new(1.0, PLAY_AREA_HEIGHT)),
                 ..default()
             },
-            transform: Transform::from_xyz(PLAY_AREA_WIDTH / 2.0, 0.0, 0.0),
+            transform: Transform::from_xyz(PLAY_AREA_WIDTH / 2.0, 0.0, 1.0),
             ..default()
         },
         Renderable {
@@ -96,6 +96,33 @@ fn setup_scene(mut commands: Commands) {
         },
         Ball { is_attached: true },
     ));
+
+    let row_count = ROW_COLORS.iter().len() as i32;
+    let block_size = Vec2::new(BLOCK_WIDTH, BLOCK_WIDTH * BLOCK_HEIGHT_RATIO);
+    for (row, color) in ROW_COLORS.iter().enumerate() {
+        let pos_y = 200.0 - row as f32 * block_size.y;
+        for i in 0..BLOCKS_PER_ROW {
+            let pos = Vec2::new(-(PLAY_AREA_WIDTH - BLOCK_WIDTH) / 2.0 + i as f32 * block_size.x, pos_y);
+            commands.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: color.clone(),
+                        custom_size: Some(block_size),
+                        ..default()
+                    },
+                    transform: Transform::from_xyz(pos.x, pos.y, 0.0),
+                    ..default()
+                },
+                Renderable {
+                    pos,
+                    size: block_size,
+                    scale_x: true,
+                    scale_y: true,
+                },
+                Block { score: (row_count - i as i32) * 1000 },
+            ));
+        }
+    }
 }
 
 
