@@ -13,3 +13,8 @@ pub struct Renderable {
 pub struct Paddle {
     pub speed: f32,
 }
+
+#[derive(Component)]
+pub struct Ball {
+    pub is_attached: bool
+}
