@@ -16,7 +16,9 @@ impl Plugin for BreakoutScenePlugin {
             .add_startup_system(setup_scene)
             .add_system(scale_handler)
             .add_system(paddle_keyboard_input)
+            .add_system(ball_keyboard_input)
             .add_system(move_ball_with_paddle)
+            .add_system(move_ball)
             .add_system(renderable_transform_handler.after(move_ball_with_paddle));
     }
 }
@@ -26,6 +28,7 @@ fn setup_scene(mut commands: Commands) {
     let paddle_size = Vec2::new(PADDLE_WIDTH_RATIO * PADDLE_HEIGHT, PADDLE_HEIGHT);
     let paddle_pos = Vec2::new(0.0, -(PLAY_AREA_HEIGHT - PADDLE_HEIGHT) / 2.0);
     let ball_pos = Vec2::new(0.0, paddle_pos.y + (paddle_size.y + BALL_SIZE) / 2.0);
+    // Spawn left border
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -41,8 +44,9 @@ fn setup_scene(mut commands: Commands) {
             size: Vec2::new(1.0, PLAY_AREA_HEIGHT),
             scale_x: false,
             scale_y: true,
-        }
+        },
     ));
+    // Spawn right border
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -58,8 +62,9 @@ fn setup_scene(mut commands: Commands) {
             size: Vec2::new(1.0, PLAY_AREA_HEIGHT),
             scale_x: false,
             scale_y: true,
-        }
+        },
     ));
+    // Spawn paddle
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -76,8 +81,11 @@ fn setup_scene(mut commands: Commands) {
             scale_x: true,
             scale_y: true,
         },
-        Paddle { speed: PADDLE_DEFAULT_SPEED },
+        Paddle {
+            speed: PADDLE_DEFAULT_SPEED,
+        },
     ));
+    // Spawn ball
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -85,7 +93,7 @@ fn setup_scene(mut commands: Commands) {
                 custom_size: Some(Vec2::new(BALL_SIZE, BALL_SIZE)),
                 ..default()
             },
-            transform: Transform::from_xyz(ball_pos.x, ball_pos.y, 0.0),
+            transform: Transform::from_xyz(ball_pos.x, ball_pos.y, 1.0),
             ..default()
         },
         Renderable {
@@ -94,7 +102,7 @@ fn setup_scene(mut commands: Commands) {
             scale_x: true,
             scale_y: true,
         },
-        Ball { is_attached: true },
+        Ball::default(),
     ));
 
     let row_count = ROW_COLORS.iter().len() as i32;
@@ -102,7 +110,10 @@ fn setup_scene(mut commands: Commands) {
     for (row, color) in ROW_COLORS.iter().enumerate() {
         let pos_y = 200.0 - row as f32 * block_size.y;
         for i in 0..BLOCKS_PER_ROW {
-            let pos = Vec2::new(-(PLAY_AREA_WIDTH - BLOCK_WIDTH) / 2.0 + i as f32 * block_size.x, pos_y);
+            let pos = Vec2::new(
+                -(PLAY_AREA_WIDTH - BLOCK_WIDTH) / 2.0 + i as f32 * block_size.x,
+                pos_y,
+            );
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
@@ -119,10 +130,10 @@ fn setup_scene(mut commands: Commands) {
                     scale_x: true,
                     scale_y: true,
                 },
-                Block { score: (row_count - i as i32) * 1000 },
+                Block {
+                    score: (row_count - i as i32) * 1000,
+                },
             ));
         }
     }
 }
-
-

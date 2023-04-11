@@ -5,9 +5,9 @@ use crate::common::ViewportSize;
 use crate::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::scenes::BreakoutScenePlugin;
 
-mod scenes;
-mod constants;
 mod common;
+mod constants;
+mod scenes;
 
 const CLEAR_COLOR: ClearColor = ClearColor(Color::BLACK);
 
@@ -35,7 +35,10 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn resize_notificator(mut resize_event: EventReader<WindowResized>, mut viewport_size: ResMut<ViewportSize>) {
+fn resize_notificator(
+    mut resize_event: EventReader<WindowResized>,
+    mut viewport_size: ResMut<ViewportSize>,
+) {
     for e in resize_event.iter() {
         if e.width != viewport_size.width || e.height != viewport_size.height {
             viewport_size.width = e.width;

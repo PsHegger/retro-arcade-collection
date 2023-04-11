@@ -8,6 +8,7 @@ pub const PADDLE_WIDTH_RATIO: f32 = 5.0;
 pub const PADDLE_DEFAULT_SPEED: f32 = 200.0;
 
 pub const BALL_SIZE: f32 = 8.0;
+pub const BALL_DEFAULT_SPEED: f32 = 200.0;
 
 pub const BLOCKS_PER_ROW: i32 = 10;
 pub const BLOCK_WIDTH: f32 = PLAY_AREA_WIDTH / BLOCKS_PER_ROW as f32;
@@ -21,5 +22,5 @@ pub static ROW_COLORS: [Color; 8] = [
     Color::GREEN,
     Color::TEAL,
     Color::BLUE,
-    Color::PURPLE
+    Color::PURPLE,
 ];
