@@ -4,7 +4,8 @@ use bevy::sprite::Anchor;
 use bevy::text::{Text, Text2dBundle, TextStyle};
 use bevy::utils::default;
 
-use crate::constants::{Game, WINDOW_HEIGHT};
+use crate::common::Game;
+use crate::constants::WINDOW_HEIGHT;
 use crate::scenes::menu::components::{MenuComponent, MenuGameItem};
 
 pub struct MenuScenePlugin;

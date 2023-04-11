@@ -1,6 +1,6 @@
 use bevy::prelude::Component;
 
-use crate::constants::Game;
+use crate::common::Game;
 
 #[derive(Component)]
 pub struct MenuComponent;
