@@ -2,7 +2,7 @@ use bevy::app::App;
 use bevy::prelude::*;
 
 use crate::common::ViewportSize;
-use crate::scenes::breakout::components::Renderable;
+use crate::scenes::breakout::components::{Paddle, Renderable};
 use crate::scenes::breakout::constants::*;
 use crate::scenes::breakout::resources::ViewportScale;
 
@@ -13,6 +13,7 @@ impl Plugin for BreakoutScenePlugin {
         app.insert_resource(ViewportScale::default())
             .add_startup_system(foo)
             .add_system(update_scale)
+            .add_system(keyboard_input.before(renderable_translate_handler))
             .add_system(renderable_translate_handler);
     }
 }
@@ -71,6 +72,7 @@ fn foo(mut commands: Commands) {
             scale_x: true,
             scale_y: true,
         },
+        Paddle { speed: PADDLE_DEFAULT_SPEED },
     ));
 }
 
@@ -102,5 +104,27 @@ fn renderable_translate_handler(
         let scaled_pos_x = renderable.pos.x * viewport_scale.scale;
         let scaled_pos_y = renderable.pos.y * viewport_scale.scale;
         transform.translation = Vec3::new(scaled_pos_x, scaled_pos_y, 0.0);
+    }
+}
+
+fn keyboard_input(
+    time: Res<Time>,
+    keys: Res<Input<KeyCode>>,
+    mut query: Query<(&mut Renderable, &Paddle)>,
+) {
+    for (mut renderable, paddle) in query.iter_mut() {
+        if keys.any_pressed([KeyCode::A, KeyCode::Left]) {
+            let mut new_pos = renderable.pos.x - time.delta_seconds() * paddle.speed;
+            if new_pos < -(PLAY_AREA_WIDTH - renderable.size.x) / 2.0 {
+                new_pos = -(PLAY_AREA_WIDTH - renderable.size.x) / 2.0;
+            }
+            renderable.pos.x = new_pos;
+        } else if keys.any_pressed([KeyCode::D, KeyCode::Right]) {
+            let mut new_pos = renderable.pos.x + time.delta_seconds() * paddle.speed;
+            if new_pos > (PLAY_AREA_WIDTH - renderable.size.x) / 2.0 {
+                new_pos = (PLAY_AREA_WIDTH - renderable.size.x) / 2.0;
+            }
+            renderable.pos.x = new_pos;
+        }
     }
 }

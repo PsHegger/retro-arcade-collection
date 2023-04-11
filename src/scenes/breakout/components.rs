@@ -8,3 +8,8 @@ pub struct Renderable {
     pub scale_x: bool,
     pub scale_y: bool,
 }
+
+#[derive(Component)]
+pub struct Paddle {
+    pub speed: f32,
+}
