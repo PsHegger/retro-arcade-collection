@@ -1,6 +1,8 @@
 use bevy::app::App;
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 
+use crate::constants::FONT_FILE;
 use crate::scenes::breakout::components::*;
 use crate::scenes::breakout::constants::*;
 use crate::scenes::breakout::event_handlers::*;
@@ -24,7 +26,7 @@ impl Plugin for BreakoutScenePlugin {
             .add_system(move_ball_with_paddle)
             .add_system(move_ball)
             .add_system(block_destroyed_event_handler.after(move_ball))
-            .add_system(ball_speed_update.after(block_destroyed_event_handler))
+            .add_system(score_change.after(block_destroyed_event_handler))
             .add_system(renderable_transform_handler.after(block_destroyed_event_handler));
     }
 }
@@ -142,4 +144,28 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
             ));
         }
     }
+
+    // Spawn score text
+    let font = asset_server.load(FONT_FILE.to_string());
+    let score_style = TextStyle {
+        font,
+        font_size: 30.0,
+        color: Color::WHITE,
+    };
+    let score_pos_y = PLAY_AREA_HEIGHT / 2.0 - 5.0;
+    commands.spawn((
+        Text2dBundle {
+            text: Text::from_section("0", score_style).with_alignment(TextAlignment::Center),
+            transform: Transform::from_xyz(0.0, score_pos_y, 2.0),
+            text_anchor: Anchor::TopCenter,
+            ..default()
+        },
+        Renderable {
+            pos: Vec2::new(0.0, score_pos_y),
+            size: Default::default(),
+            scale_x: false,
+            scale_y: false,
+        },
+        ScoreText,
+    ));
 }

@@ -8,19 +8,33 @@ use crate::scenes::breakout::resources::ViewportScale;
 pub fn scale_handler(
     viewport_size: Res<ViewportSize>,
     mut viewport_scale: ResMut<ViewportScale>,
-    mut query: Query<(&mut Sprite, &mut Transform, &Renderable)>,
+    mut query: Query<(Option<&mut Sprite>, &mut Transform, &Renderable)>,
 ) {
-    if !viewport_size.is_changed() { return; }
+    if !viewport_size.is_changed() {
+        return;
+    }
     let scale = viewport_size.height / PLAY_AREA_HEIGHT;
 
     viewport_scale.scale = scale;
 
-    for (mut sprite, mut transform, renderable) in query.iter_mut() {
-        let scaled_width = if renderable.scale_x { renderable.size.x * scale } else { renderable.size.x };
-        let scaled_height = if renderable.scale_y { renderable.size.y * scale } else { renderable.size.y };
+    for (sprite_option, mut transform, renderable) in query.iter_mut() {
+        if let Some(mut sprite) = sprite_option {
+            // Update size if this entity is a sprite
+            let scaled_width = if renderable.scale_x {
+                renderable.size.x * scale
+            } else {
+                renderable.size.x
+            };
+            let scaled_height = if renderable.scale_y {
+                renderable.size.y * scale
+            } else {
+                renderable.size.y
+            };
+            sprite.custom_size = Some(Vec2::new(scaled_width, scaled_height));
+        }
+        // update position
         let scaled_pos_x = renderable.pos.x * scale;
         let scaled_pos_y = renderable.pos.y * scale;
-        sprite.custom_size = Some(Vec2::new(scaled_width, scaled_height));
         transform.translation = Vec3::new(scaled_pos_x, scaled_pos_y, transform.translation.z);
     }
 }

@@ -2,7 +2,7 @@ use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy::time::Time;
 
-use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable};
+use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable, ScoreText};
 use crate::scenes::breakout::constants::{
     BALL_DEFAULT_SPEED, BALL_SPEED_INCREASE_SCORE, BALL_SPEED_INCREASE_VALUE,
 };
@@ -116,12 +116,19 @@ pub fn move_ball(
     }
 }
 
-pub fn ball_speed_update(player_score: Res<PlayerScore>, mut query: Query<&mut Ball>) {
+pub fn score_change(
+    player_score: Res<PlayerScore>,
+    mut ball_query: Query<&mut Ball>,
+    mut score_query: Query<&mut Text, With<ScoreText>>,
+) {
     if !player_score.is_changed() {
         return;
     }
-    for mut ball in query.iter_mut() {
+    for mut ball in ball_query.iter_mut() {
         ball.speed = BALL_DEFAULT_SPEED
             + (player_score.0 / BALL_SPEED_INCREASE_SCORE) as f32 * BALL_SPEED_INCREASE_VALUE;
+    }
+    for mut score_label in score_query.iter_mut() {
+        score_label.sections[0].value = format!("{}", player_score.0);
     }
 }

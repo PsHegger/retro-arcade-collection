@@ -71,3 +71,6 @@ impl Default for Ball {
 pub struct Block {
     pub score: i32,
 }
+
+#[derive(Component)]
+pub struct ScoreText;
