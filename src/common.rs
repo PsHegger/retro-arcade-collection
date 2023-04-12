@@ -19,7 +19,16 @@ pub enum Game {
 
 impl Game {
     pub fn supported_games() -> Iter<'static, Game> {
-        static SUPPORTED_GAMES: [Game; 8] = [Asteroid, Bomberman, Breakout, PacMan, Sokoban, SpaceInvaders, Tetris, Tron];
+        static SUPPORTED_GAMES: [Game; 8] = [
+            Asteroid,
+            Bomberman,
+            Breakout,
+            PacMan,
+            Sokoban,
+            SpaceInvaders,
+            Tetris,
+            Tron,
+        ];
         SUPPORTED_GAMES.iter()
     }
 
@@ -32,7 +41,7 @@ impl Game {
             Sokoban => Color::BLUE,
             SpaceInvaders => Color::ORANGE,
             Tetris => Color::TEAL,
-            Tron => Color::GREEN
+            Tron => Color::GREEN,
         }
     }
 }
@@ -40,11 +49,14 @@ impl Game {
 #[derive(Resource, Debug)]
 pub struct ViewportSize {
     pub width: f32,
-    pub height: f32
+    pub height: f32,
 }
 
 impl Default for ViewportSize {
     fn default() -> Self {
-        ViewportSize { width: WINDOW_WIDTH, height: WINDOW_HEIGHT }
+        ViewportSize {
+            width: WINDOW_WIDTH,
+            height: WINDOW_HEIGHT,
+        }
     }
 }
