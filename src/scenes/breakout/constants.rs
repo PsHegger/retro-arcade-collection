@@ -1,5 +1,3 @@
-use bevy::prelude::Color;
-
 pub const PLAY_AREA_WIDTH: f32 = 640.0;
 pub const PLAY_AREA_HEIGHT: f32 = 480.0;
 
@@ -14,13 +12,13 @@ pub const BLOCKS_PER_ROW: i32 = 10;
 pub const BLOCK_WIDTH: f32 = PLAY_AREA_WIDTH / BLOCKS_PER_ROW as f32;
 pub const BLOCK_HEIGHT_RATIO: f32 = 1.0 / 4.0;
 
-pub static ROW_COLORS: [Color; 8] = [
-    Color::MAROON,
-    Color::RED,
-    Color::ORANGE,
-    Color::YELLOW,
-    Color::GREEN,
-    Color::TEAL,
-    Color::BLUE,
-    Color::PURPLE,
+pub static ROW_SPRITES: [&str; 8] = [
+    "sprites/breakout/block_maroon.png",
+    "sprites/breakout/block_red.png",
+    "sprites/breakout/block_orange.png",
+    "sprites/breakout/block_yellow.png",
+    "sprites/breakout/block_green.png",
+    "sprites/breakout/block_teal.png",
+    "sprites/breakout/block_blue.png",
+    "sprites/breakout/block_purple.png",
 ];
