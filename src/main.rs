@@ -3,10 +3,12 @@ use bevy::window::{close_on_esc, PresentMode, Window, WindowPlugin, WindowResize
 
 use crate::common::ViewportSize;
 use crate::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::debug_plugin::DebugPlugin;
 use crate::scenes::BreakoutScenePlugin;
 
 mod common;
 mod constants;
+mod debug_plugin;
 mod scenes;
 
 const CLEAR_COLOR: ClearColor = ClearColor(Color::BLACK);
@@ -24,6 +26,7 @@ fn main() {
             }),
             ..default()
         }))
+        .add_plugin(DebugPlugin)
         .add_system(close_on_esc)
         .add_system(resize_notificator)
         .add_startup_system(setup_camera)
