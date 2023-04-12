@@ -3,6 +3,11 @@ use bevy::prelude::*;
 use bevy::time::Time;
 
 use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable};
+use crate::scenes::breakout::constants::{
+    BALL_DEFAULT_SPEED, BALL_SPEED_INCREASE_SCORE, BALL_SPEED_INCREASE_VALUE,
+};
+use crate::scenes::breakout::events::BlockDestroyedEvent;
+use crate::scenes::breakout::resources::PlayerScore;
 
 pub fn move_ball_with_paddle(
     paddle_query: Query<&Renderable, (With<Paddle>, Changed<Renderable>)>,
@@ -18,8 +23,8 @@ pub fn move_ball_with_paddle(
 }
 
 pub fn move_ball(
-    mut commands: Commands,
     time: Res<Time>,
+    mut block_destroyed_events: EventWriter<BlockDestroyedEvent>,
     mut ball_query: Query<(&mut Ball, &mut Renderable), (Without<Paddle>, Without<Block>)>,
     paddle_query: Query<&Renderable, (With<Paddle>, Without<Block>)>,
     blocks_query: Query<(Entity, &Block, &Renderable)>,
@@ -58,7 +63,7 @@ pub fn move_ball(
             }
 
             // check for collision with any block
-            for (entity, _block, block_renderable) in blocks_query.iter() {
+            for (entity, block, block_renderable) in blocks_query.iter() {
                 let mut block_hit = false;
 
                 if new_pos.x >= block_renderable.left() && new_pos.x <= block_renderable.right() {
@@ -99,12 +104,24 @@ pub fn move_ball(
                 }
 
                 if block_hit {
-                    commands.entity(entity).despawn();
-                    // TODO: RAC-34 update score
+                    block_destroyed_events.send(BlockDestroyedEvent {
+                        entity,
+                        block_value: block.score,
+                    })
                 }
             }
 
             ball_renderable.pos = new_pos;
         }
+    }
+}
+
+pub fn ball_speed_update(player_score: Res<PlayerScore>, mut query: Query<&mut Ball>) {
+    if !player_score.is_changed() {
+        return;
+    }
+    for mut ball in query.iter_mut() {
+        ball.speed = BALL_DEFAULT_SPEED
+            + (player_score.0 / BALL_SPEED_INCREASE_SCORE) as f32 * BALL_SPEED_INCREASE_VALUE;
     }
 }

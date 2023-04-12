@@ -1,25 +1,31 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
-use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable};
+use crate::scenes::breakout::components::*;
 use crate::scenes::breakout::constants::*;
+use crate::scenes::breakout::event_handlers::*;
+use crate::scenes::breakout::events::*;
 use crate::scenes::breakout::input::*;
 use crate::scenes::breakout::logic::*;
 use crate::scenes::breakout::rendering::*;
-use crate::scenes::breakout::resources::ViewportScale;
+use crate::scenes::breakout::resources::*;
 
 pub struct BreakoutScenePlugin;
 
 impl Plugin for BreakoutScenePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ViewportScale::default())
+            .insert_resource(PlayerScore(0))
+            .add_event::<BlockDestroyedEvent>()
             .add_startup_system(setup_scene)
             .add_system(scale_handler)
             .add_system(paddle_keyboard_input)
             .add_system(ball_keyboard_input)
             .add_system(move_ball_with_paddle)
             .add_system(move_ball)
-            .add_system(renderable_transform_handler.after(move_ball_with_paddle));
+            .add_system(block_destroyed_event_handler.after(move_ball))
+            .add_system(ball_speed_update.after(block_destroyed_event_handler))
+            .add_system(renderable_transform_handler.after(block_destroyed_event_handler));
     }
 }
 
@@ -131,7 +137,7 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
                     scale_y: true,
                 },
                 Block {
-                    score: (row_count - i as i32) * 1000,
+                    score: (row_count - row as i32) * 1000,
                 },
             ));
         }

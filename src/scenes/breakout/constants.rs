@@ -7,6 +7,8 @@ pub const PADDLE_DEFAULT_SPEED: f32 = 200.0;
 
 pub const BALL_SIZE: f32 = 8.0;
 pub const BALL_DEFAULT_SPEED: f32 = 200.0;
+pub const BALL_SPEED_INCREASE_SCORE: i32 = 5000;
+pub const BALL_SPEED_INCREASE_VALUE: f32 = 10.0;
 
 pub const BLOCKS_PER_ROW: i32 = 10;
 pub const BLOCK_WIDTH: f32 = PLAY_AREA_WIDTH / BLOCKS_PER_ROW as f32;
