@@ -4,9 +4,9 @@ use bevy::time::Time;
 
 use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable, ScoreText};
 use crate::scenes::breakout::constants::{
-    BALL_DEFAULT_SPEED, BALL_SPEED_INCREASE_SCORE, BALL_SPEED_INCREASE_VALUE,
+    SoundType, BALL_DEFAULT_SPEED, BALL_SPEED_INCREASE_SCORE, BALL_SPEED_INCREASE_VALUE,
 };
-use crate::scenes::breakout::events::BlockDestroyedEvent;
+use crate::scenes::breakout::events::{BlockDestroyedEvent, PlaySoundEvent};
 use crate::scenes::breakout::resources::PlayerScore;
 
 pub fn move_ball_with_paddle(
@@ -25,26 +25,31 @@ pub fn move_ball_with_paddle(
 pub fn move_ball(
     time: Res<Time>,
     mut block_destroyed_events: EventWriter<BlockDestroyedEvent>,
+    mut play_sound_events: EventWriter<PlaySoundEvent>,
     mut ball_query: Query<(&mut Ball, &mut Renderable), (Without<Paddle>, Without<Block>)>,
     paddle_query: Query<&Renderable, (With<Paddle>, Without<Block>)>,
     blocks_query: Query<(Entity, &Block, &Renderable)>,
 ) {
     for (mut ball, mut ball_renderable) in ball_query.iter_mut() {
         if !ball.is_attached {
+            let mut sound: Option<SoundType> = None;
             let mut new_pos = ball_renderable.pos + ball.dir * ball.speed * time.delta_seconds();
             if new_pos.x < ball_renderable.min_x() {
                 // Collision with left wall
                 new_pos.x = ball_renderable.min_x();
                 ball.dir.x = -ball.dir.x;
+                sound = Some(SoundType::BallHitWall);
             } else if new_pos.x > ball_renderable.max_x() {
                 // Collision with right wall
                 new_pos.x = ball_renderable.max_x();
                 ball.dir.x = -ball.dir.x;
+                sound = Some(SoundType::BallHitWall);
             }
             if new_pos.y > ball_renderable.max_y() {
                 // Collision with top
                 new_pos.y = ball_renderable.max_y();
                 ball.dir.y = -ball.dir.y;
+                sound = Some(SoundType::BallHitWall);
             } else if new_pos.y < ball_renderable.min_y() {
                 // Ball reached bottom
                 todo!("RAC-33: life is lost")
@@ -59,6 +64,7 @@ pub fn move_ball(
                     new_pos.y = paddle.top() + ball_renderable.size.y / 2.0;
                     ball.dir = Vec2::new((new_pos.x - paddle.pos.x) / (paddle.size.x / 2.0), 1.0)
                         .normalize();
+                    sound = Some(SoundType::BallHitPaddle);
                 }
             }
 
@@ -107,11 +113,15 @@ pub fn move_ball(
                     block_destroyed_events.send(BlockDestroyedEvent {
                         entity,
                         block_value: block.score,
-                    })
+                    });
+                    sound = Some(SoundType::BallHitWall);
                 }
             }
 
             ball_renderable.pos = new_pos;
+            if let Some(sound_type) = sound {
+                play_sound_events.send(PlaySoundEvent(sound_type));
+            }
         }
     }
 }

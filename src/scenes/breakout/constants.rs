@@ -24,3 +24,8 @@ pub static ROW_SPRITES: [&str; 8] = [
     "sprites/breakout/block_blue.png",
     "sprites/breakout/block_purple.png",
 ];
+
+pub enum SoundType {
+    BallHitWall,
+    BallHitPaddle,
+}
