@@ -6,8 +6,19 @@ use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable, Score
 use crate::scenes::breakout::constants::{
     SoundType, BALL_DEFAULT_SPEED, BALL_SPEED_INCREASE_SCORE, BALL_SPEED_INCREASE_VALUE,
 };
-use crate::scenes::breakout::events::{BlockDestroyedEvent, PlaySoundEvent};
-use crate::scenes::breakout::resources::PlayerScore;
+use crate::scenes::breakout::event_handlers::block_destroyed_event_handler;
+use crate::scenes::breakout::events::{BlockDestroyedEvent, GameOverEvent, PlaySoundEvent};
+use crate::scenes::breakout::resources::GameState;
+
+pub struct LogicPlugin;
+
+impl Plugin for LogicPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system(move_ball_with_paddle)
+            .add_system(move_ball)
+            .add_system(score_change.after(block_destroyed_event_handler));
+    }
+}
 
 pub fn move_ball_with_paddle(
     paddle_query: Query<&Renderable, (With<Paddle>, Changed<Renderable>)>,
@@ -26,11 +37,17 @@ pub fn move_ball(
     time: Res<Time>,
     mut block_destroyed_events: EventWriter<BlockDestroyedEvent>,
     mut play_sound_events: EventWriter<PlaySoundEvent>,
+    mut game_over_events: EventWriter<GameOverEvent>,
     mut ball_query: Query<(&mut Ball, &mut Renderable), (Without<Paddle>, Without<Block>)>,
     paddle_query: Query<&Renderable, (With<Paddle>, Without<Block>)>,
     blocks_query: Query<(Entity, &Block, &Renderable)>,
 ) {
     for (mut ball, mut ball_renderable) in ball_query.iter_mut() {
+        if blocks_query.is_empty() {
+            // cleared all blocks: win
+            game_over_events.send_default();
+            return;
+        }
         if !ball.is_attached {
             let mut sound: Option<SoundType> = None;
             let mut new_pos = ball_renderable.pos + ball.dir * ball.speed * time.delta_seconds();
@@ -52,7 +69,7 @@ pub fn move_ball(
                 sound = Some(SoundType::BallHitWall);
             } else if new_pos.y < ball_renderable.min_y() {
                 // Ball reached bottom
-                todo!("RAC-33: life is lost")
+                game_over_events.send_default();
             }
 
             // Check for collision with paddle
@@ -127,18 +144,18 @@ pub fn move_ball(
 }
 
 pub fn score_change(
-    player_score: Res<PlayerScore>,
+    game_state: Res<GameState>,
     mut ball_query: Query<&mut Ball>,
     mut score_query: Query<&mut Text, With<ScoreText>>,
 ) {
-    if !player_score.is_changed() {
+    if !game_state.is_changed() {
         return;
     }
     for mut ball in ball_query.iter_mut() {
         ball.speed = BALL_DEFAULT_SPEED
-            + (player_score.0 / BALL_SPEED_INCREASE_SCORE) as f32 * BALL_SPEED_INCREASE_VALUE;
+            + (game_state.score / BALL_SPEED_INCREASE_SCORE) as f32 * BALL_SPEED_INCREASE_VALUE;
     }
     for mut score_label in score_query.iter_mut() {
-        score_label.sections[0].value = format!("{}", player_score.0);
+        score_label.sections[0].value = format!("{}", game_state.score);
     }
 }

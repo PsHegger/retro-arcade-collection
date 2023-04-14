@@ -51,7 +51,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         FpsText,
     ));
-    println!("debug setup")
 }
 
 fn update_scale(viewport_size: Res<ViewportSize>, mut query: Query<&mut Transform, With<FpsText>>) {
