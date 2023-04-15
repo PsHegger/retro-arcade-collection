@@ -57,11 +57,10 @@ pub fn game_over_event_handler(
     mut commands: Commands,
     mut events: EventReader<GameOverEvent>,
     ball_query: Query<Entity, With<Ball>>,
-    windows_query: Query<&Window>,
     asset_server: Res<AssetServer>,
     mut game_state: ResMut<GameState>,
+    viewport_size: Res<ViewportSize>,
 ) {
-    let window = windows_query.single();
     if events.is_empty() {
         return;
     }
@@ -72,11 +71,15 @@ pub fn game_over_event_handler(
         commands.entity(entity).despawn()
     }
 
+    let scale = viewport_size.height / PLAY_AREA_HEIGHT;
+    let target_resolution = Vec2::new(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
+
+    let overlay_size = Vec2::new(viewport_size.width, viewport_size.height);
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
                 color: Color::rgba(0.0, 0.0, 0.0, 0.85),
-                custom_size: Some(Vec2::new(window.width(), window.height())),
+                custom_size: Some(overlay_size),
                 ..default()
             },
             transform: Transform::from_xyz(0.0, 0.0, 10.0),
@@ -84,9 +87,11 @@ pub fn game_over_event_handler(
         },
         EndGameUIElement,
         BreakoutEntity,
+        Renderable::new(Vec2::new(0.0, 0.0), target_resolution).with_size(overlay_size),
     ));
 
     let font = asset_server.load(FONT_FILE.to_string());
+    let game_over_pos = Vec2::new(0.0, 40.0);
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
@@ -97,12 +102,13 @@ pub fn game_over_event_handler(
                     color: Color::WHITE,
                 },
             ),
-            transform: Transform::from_xyz(0.0, 40.0, 11.0),
+            transform: Transform::from_xyz(game_over_pos.x * scale, game_over_pos.y * scale, 11.0),
             text_anchor: Anchor::BottomCenter,
             ..default()
         },
         EndGameUIElement,
         BreakoutEntity,
+        Renderable::new(game_over_pos, target_resolution).with_scale(false, false),
     ));
     commands.spawn((
         Text2dBundle {
@@ -114,13 +120,16 @@ pub fn game_over_event_handler(
                     color: Color::WHITE,
                 },
             ),
-            transform: Transform::from_xyz(0.0, 40.0, 11.0),
+            transform: Transform::from_xyz(game_over_pos.x * scale, game_over_pos.y * scale, 11.0),
             text_anchor: Anchor::TopCenter,
             ..default()
         },
         EndGameUIElement,
         BreakoutEntity,
+        Renderable::new(game_over_pos, target_resolution).with_scale(false, false),
     ));
+
+    let buttons_pos = Vec2::new(0.0, -PLAY_AREA_HEIGHT / 2.0 + 10.0);
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
@@ -132,12 +141,13 @@ pub fn game_over_event_handler(
                 },
             )
             .with_alignment(TextAlignment::Center),
-            transform: Transform::from_xyz(0.0, -window.height() / 2.0 + 10.0, 11.0),
+            transform: Transform::from_xyz(buttons_pos.x * scale, buttons_pos.y * scale, 11.0),
             text_anchor: Anchor::BottomCenter,
             ..default()
         },
         EndGameUIElement,
         BreakoutEntity,
+        Renderable::new(buttons_pos, target_resolution).with_scale(false, false),
     ));
 }
 
@@ -178,15 +188,9 @@ fn restart_game_event_handler(
                 .with_scale(scale_vec.clone()),
             ..default()
         },
-        Renderable {
-            pos: Vec2::new(-border_pos, 0.0),
-            size: Vec2::new(1.0, PLAY_AREA_HEIGHT),
-            target_resolution: target_resolution.clone(),
-            scale_x: false,
-            scale_y: true,
-            translate_x: true,
-            translate_y: true,
-        },
+        Renderable::new(Vec2::new(-border_pos, 0.0), target_resolution)
+            .with_size(Vec2::new(1.0, PLAY_AREA_HEIGHT))
+            .with_scale(false, true),
         BreakoutEntity,
     ));
     // Spawn right border
@@ -201,15 +205,9 @@ fn restart_game_event_handler(
                 .with_scale(scale_vec.clone()),
             ..default()
         },
-        Renderable {
-            pos: Vec2::new(border_pos, 0.0),
-            size: Vec2::new(1.0, PLAY_AREA_HEIGHT),
-            target_resolution: target_resolution.clone(),
-            scale_x: false,
-            scale_y: true,
-            translate_x: true,
-            translate_y: true,
-        },
+        Renderable::new(Vec2::new(border_pos, 0.0), target_resolution)
+            .with_size(Vec2::new(1.0, PLAY_AREA_HEIGHT))
+            .with_scale(false, true),
         BreakoutEntity,
     ));
     // Spawn paddle
@@ -224,15 +222,7 @@ fn restart_game_event_handler(
                 .with_scale(scale_vec.clone()),
             ..default()
         },
-        Renderable {
-            pos: paddle_pos,
-            size: paddle_size,
-            target_resolution: target_resolution.clone(),
-            scale_x: true,
-            scale_y: true,
-            translate_x: true,
-            translate_y: true,
-        },
+        Renderable::new(paddle_pos, target_resolution).with_size(paddle_size),
         Paddle {
             speed: PADDLE_DEFAULT_SPEED,
         },
@@ -250,15 +240,7 @@ fn restart_game_event_handler(
                 .with_scale(scale_vec.clone()),
             ..default()
         },
-        Renderable {
-            pos: ball_pos,
-            size: Vec2::new(BALL_SIZE, BALL_SIZE),
-            target_resolution: target_resolution.clone(),
-            scale_x: true,
-            scale_y: true,
-            translate_x: true,
-            translate_y: true,
-        },
+        Renderable::new(ball_pos, target_resolution).with_size(Vec2::new(BALL_SIZE, BALL_SIZE)),
         Ball::default(),
         BreakoutEntity,
     ));
@@ -283,15 +265,7 @@ fn restart_game_event_handler(
                         .with_scale(Vec3::new(scale, scale, 1.0)),
                     ..default()
                 },
-                Renderable {
-                    pos,
-                    size: block_size,
-                    target_resolution: target_resolution.clone(),
-                    scale_x: true,
-                    scale_y: true,
-                    translate_x: true,
-                    translate_y: true,
-                },
+                Renderable::new(pos, target_resolution).with_size(block_size),
                 Block {
                     score: (row_count - row as i32) * 1000,
                 },
@@ -315,15 +289,7 @@ fn restart_game_event_handler(
             text_anchor: Anchor::TopCenter,
             ..default()
         },
-        Renderable {
-            pos: Vec2::new(0.0, score_pos_y),
-            target_resolution: target_resolution.clone(),
-            size: Default::default(),
-            scale_x: false,
-            scale_y: false,
-            translate_x: true,
-            translate_y: true,
-        },
+        Renderable::new(Vec2::new(0.0, score_pos_y), target_resolution).with_scale(false, false),
         ScoreText,
         BreakoutEntity,
     ));
