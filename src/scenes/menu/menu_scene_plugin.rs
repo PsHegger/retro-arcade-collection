@@ -4,7 +4,7 @@ use bevy::sprite::Anchor;
 use bevy::text::{Text, Text2dBundle, TextStyle};
 use bevy::utils::default;
 
-use crate::common::Game;
+use crate::common::{AppState, Game};
 use crate::constants::{FONT_FILE, WINDOW_HEIGHT};
 use crate::scenes::menu::components::{MenuComponent, MenuGameItem};
 
@@ -14,7 +14,9 @@ const GAMES_HORIZONTAL_MARGIN: f32 = 50.0;
 
 impl Plugin for MenuScenePlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_menu);
+        app.add_system(setup_menu.in_schedule(OnEnter(AppState::Menu)))
+            .add_system(despawn_menu.in_schedule(OnExit(AppState::Menu)))
+            .add_system(game_click_system.in_set(OnUpdate(AppState::Menu)));
     }
 }
 
@@ -83,4 +85,56 @@ fn setup_menu(mut commands: Commands, assets: Res<AssetServer>) {
             MenuGameItem { game: game.clone() },
         ));
     }
+}
+
+pub fn despawn_menu(mut commands: Commands, components: Query<Entity, With<MenuComponent>>) {
+    for component in components.iter() {
+        commands.entity(component).despawn();
+    }
+}
+
+pub fn game_click_system(
+    mouse: Res<Input<MouseButton>>,
+    mut next_state: ResMut<NextState<AppState>>,
+    windows: Query<&Window>,
+    games: Query<(&MenuGameItem, &Sprite, &Transform)>,
+    camera_query: Query<(&Camera, &GlobalTransform)>,
+) {
+    if !mouse.just_pressed(MouseButton::Left) {
+        return;
+    }
+
+    let window = windows.single();
+    let (camera, camera_transform) = camera_query.single();
+    let Some(cursor_position) = window.cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .map(|ray| ray.origin.truncate()) else { return; };
+
+    for (game, sprite, transform) in games.iter() {
+        if let Some(bounds) = game_bounds(transform, sprite) {
+            if bounds.contains(cursor_position) {
+                match game.game {
+                    Game::Asteroid => {}
+                    Game::Bomberman => {}
+                    Game::Breakout => next_state.set(AppState::Breakout),
+                    Game::PacMan => {}
+                    Game::Sokoban => {}
+                    Game::SpaceInvaders => {}
+                    Game::Tetris => {}
+                    Game::Tron => {}
+                };
+            }
+        }
+    }
+}
+
+fn game_bounds(transform: &Transform, sprite: &Sprite) -> Option<Rect> {
+    sprite.custom_size.map(|size| {
+        Rect::new(
+            transform.translation.x - size.x / 2.0,
+            transform.translation.y - size.y / 2.0,
+            transform.translation.x + size.x / 2.0,
+            transform.translation.y + size.y / 2.0,
+        )
+    })
 }

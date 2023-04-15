@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy::window::{close_on_esc, PresentMode, Window, WindowPlugin, WindowResized};
 
-use crate::common::ViewportSize;
+use crate::common::{AppState, ViewportSize};
 use crate::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::debug_plugin::DebugPlugin;
-use crate::scenes::BreakoutScenePlugin;
+use crate::scenes::{BreakoutScenePlugin, MenuScenePlugin};
 
 mod common;
 mod constants;
@@ -15,6 +15,7 @@ const CLEAR_COLOR: ClearColor = ClearColor(Color::BLACK);
 
 fn main() {
     App::new()
+        .add_state::<AppState>()
         .insert_resource(CLEAR_COLOR)
         .insert_resource(ViewportSize::default())
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -27,10 +28,11 @@ fn main() {
             ..default()
         }))
         .add_plugin(DebugPlugin)
-        .add_system(close_on_esc)
+        .add_system(close_on_esc.run_if(in_menu))
         .add_system(resize_notificator)
         .add_startup_system(setup_camera)
         .add_plugin(BreakoutScenePlugin)
+        .add_plugin(MenuScenePlugin)
         .run();
 }
 
@@ -48,4 +50,8 @@ fn resize_notificator(
             viewport_size.height = e.height;
         }
     }
+}
+
+fn in_menu(app_state: Res<State<AppState>>) -> bool {
+    app_state.0 == AppState::Menu
 }

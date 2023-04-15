@@ -1,6 +1,6 @@
 use std::slice::Iter;
 
-use bevy::prelude::{Color, Resource};
+use bevy::prelude::{Color, Resource, States};
 
 use crate::common::Game::*;
 use crate::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
@@ -15,6 +15,13 @@ pub enum Game {
     SpaceInvaders,
     Tetris,
     Tron,
+}
+
+#[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
+pub enum AppState {
+    #[default]
+    Menu,
+    Breakout,
 }
 
 impl Game {

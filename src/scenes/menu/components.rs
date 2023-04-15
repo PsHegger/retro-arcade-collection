@@ -5,7 +5,7 @@ use crate::common::Game;
 #[derive(Component)]
 pub struct MenuComponent;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct MenuGameItem {
     pub game: Game,
 }

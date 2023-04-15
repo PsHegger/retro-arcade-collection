@@ -2,6 +2,7 @@ use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy::time::Time;
 
+use crate::common::AppState;
 use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable, ScoreText};
 use crate::scenes::breakout::constants::{
     SoundType, BALL_DEFAULT_SPEED, BALL_SPEED_INCREASE_SCORE, BALL_SPEED_INCREASE_VALUE,
@@ -14,9 +15,13 @@ pub struct LogicPlugin;
 
 impl Plugin for LogicPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(move_ball_with_paddle)
-            .add_system(move_ball)
-            .add_system(score_change.after(block_destroyed_event_handler));
+        app.add_system(move_ball_with_paddle.in_set(OnUpdate(AppState::Breakout)))
+            .add_system(move_ball.in_set(OnUpdate(AppState::Breakout)))
+            .add_system(
+                score_change
+                    .in_set(OnUpdate(AppState::Breakout))
+                    .after(block_destroyed_event_handler),
+            );
     }
 }
 
@@ -24,11 +29,10 @@ pub fn move_ball_with_paddle(
     paddle_query: Query<&Renderable, (With<Paddle>, Changed<Renderable>)>,
     mut ball_query: Query<(&Ball, &mut Renderable), Without<Paddle>>,
 ) {
-    if let Some(paddle_renderable) = paddle_query.iter().nth(0) {
-        for (ball, mut renderable) in ball_query.iter_mut() {
-            if ball.is_attached {
-                renderable.pos.x = paddle_renderable.pos.x;
-            }
+    let Ok(paddle_renderable) = paddle_query.get_single() else { return; };
+    for (ball, mut renderable) in ball_query.iter_mut() {
+        if ball.is_attached {
+            renderable.pos.x = paddle_renderable.pos.x;
         }
     }
 }
@@ -73,16 +77,15 @@ pub fn move_ball(
             }
 
             // Check for collision with paddle
-            if let Some(paddle) = paddle_query.iter().nth(0) {
-                if new_pos.x >= paddle.left()
-                    && new_pos.x <= paddle.right()
-                    && new_pos.y <= paddle.top() + ball_renderable.size.y / 2.0
-                {
-                    new_pos.y = paddle.top() + ball_renderable.size.y / 2.0;
-                    ball.dir = Vec2::new((new_pos.x - paddle.pos.x) / (paddle.size.x / 2.0), 1.0)
-                        .normalize();
-                    sound = Some(SoundType::BallHitPaddle);
-                }
+            let Ok(paddle) = paddle_query.get_single() else { continue; };
+            if new_pos.x >= paddle.left()
+                && new_pos.x <= paddle.right()
+                && new_pos.y <= paddle.top() + ball_renderable.size.y / 2.0
+            {
+                new_pos.y = paddle.top() + ball_renderable.size.y / 2.0;
+                ball.dir =
+                    Vec2::new((new_pos.x - paddle.pos.x) / (paddle.size.x / 2.0), 1.0).normalize();
+                sound = Some(SoundType::BallHitPaddle);
             }
 
             // check for collision with any block

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
+use crate::common::AppState;
 use crate::constants::FONT_FILE;
 use crate::scenes::breakout::components::*;
 use crate::scenes::breakout::constants::*;
@@ -12,10 +13,18 @@ pub struct EventHandlerPlugin;
 
 impl Plugin for EventHandlerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(block_destroyed_event_handler.after(move_ball))
-            .add_system(game_over_event_handler.after(move_ball))
-            .add_system(play_sound_event_handler)
-            .add_system(restart_game_event_handler);
+        app.add_system(
+            block_destroyed_event_handler
+                .in_set(OnUpdate(AppState::Breakout))
+                .after(move_ball),
+        )
+        .add_system(
+            game_over_event_handler
+                .in_set(OnUpdate(AppState::Breakout))
+                .after(move_ball),
+        )
+        .add_system(play_sound_event_handler.in_set(OnUpdate(AppState::Breakout)))
+        .add_system(restart_game_event_handler.in_set(OnUpdate(AppState::Breakout)));
     }
 }
 
@@ -52,7 +61,7 @@ pub fn game_over_event_handler(
     asset_server: Res<AssetServer>,
     mut game_state: ResMut<GameState>,
 ) {
-    let Some(window) = windows_query.iter().nth(0) else { return; };
+    let window = windows_query.single();
     if events.is_empty() {
         return;
     }
@@ -74,6 +83,7 @@ pub fn game_over_event_handler(
             ..default()
         },
         EndGameUIElement,
+        BreakoutEntity,
     ));
 
     let font = asset_server.load(FONT_FILE.to_string());
@@ -92,6 +102,7 @@ pub fn game_over_event_handler(
             ..default()
         },
         EndGameUIElement,
+        BreakoutEntity,
     ));
     commands.spawn((
         Text2dBundle {
@@ -108,22 +119,25 @@ pub fn game_over_event_handler(
             ..default()
         },
         EndGameUIElement,
+        BreakoutEntity,
     ));
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Press [Space] to start a new game",
+                "[Space]: New Game\n[Esc]: Menu",
                 TextStyle {
                     font: font.clone(),
                     font_size: 20.0,
                     color: Color::WHITE,
                 },
-            ),
+            )
+            .with_alignment(TextAlignment::Center),
             transform: Transform::from_xyz(0.0, -window.height() / 2.0 + 10.0, 11.0),
             text_anchor: Anchor::BottomCenter,
             ..default()
         },
         EndGameUIElement,
+        BreakoutEntity,
     ));
 }
 
@@ -167,6 +181,7 @@ fn restart_game_event_handler(
             scale_x: false,
             scale_y: true,
         },
+        BreakoutEntity,
     ));
     // Spawn right border
     commands.spawn((
@@ -185,6 +200,7 @@ fn restart_game_event_handler(
             scale_x: false,
             scale_y: true,
         },
+        BreakoutEntity,
     ));
     // Spawn paddle
     commands.spawn((
@@ -206,6 +222,7 @@ fn restart_game_event_handler(
         Paddle {
             speed: PADDLE_DEFAULT_SPEED,
         },
+        BreakoutEntity,
     ));
     // Spawn ball
     commands.spawn((
@@ -225,6 +242,7 @@ fn restart_game_event_handler(
             scale_y: true,
         },
         Ball::default(),
+        BreakoutEntity,
     ));
 
     let row_count = ROW_SPRITES.iter().len() as i32;
@@ -255,6 +273,7 @@ fn restart_game_event_handler(
                 Block {
                     score: (row_count - row as i32) * 1000,
                 },
+                BreakoutEntity,
             ));
         }
     }
@@ -281,5 +300,6 @@ fn restart_game_event_handler(
             scale_y: false,
         },
         ScoreText,
+        BreakoutEntity,
     ));
 }

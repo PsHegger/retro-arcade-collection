@@ -1,6 +1,8 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
+use crate::common::AppState;
+use crate::scenes::breakout::components::BreakoutEntity;
 use crate::scenes::breakout::event_handlers::EventHandlerPlugin;
 use crate::scenes::breakout::events::{EventsPlugin, RestartGameEvent};
 use crate::scenes::breakout::input::InputPlugin;
@@ -18,10 +20,17 @@ impl Plugin for BreakoutScenePlugin {
             .add_plugin(RenderPlugin)
             .add_plugin(EventHandlerPlugin)
             .add_plugin(LogicPlugin)
-            .add_startup_system(setup_scene);
+            .add_system(setup_scene.in_schedule(OnEnter(AppState::Breakout)))
+            .add_system(despawn_game.in_schedule(OnExit(AppState::Breakout)));
     }
 }
 
 fn setup_scene(mut restart_events: EventWriter<RestartGameEvent>) {
     restart_events.send_default();
+}
+
+fn despawn_game(mut commands: Commands, entities: Query<Entity, With<BreakoutEntity>>) {
+    for entity in entities.iter() {
+        commands.entity(entity).despawn();
+    }
 }

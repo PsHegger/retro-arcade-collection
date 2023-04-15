@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::common::ViewportSize;
+use crate::common::{AppState, ViewportSize};
 use crate::scenes::breakout::components::Renderable;
 use crate::scenes::breakout::constants::PLAY_AREA_HEIGHT;
 use crate::scenes::breakout::event_handlers::block_destroyed_event_handler;
@@ -10,8 +10,12 @@ pub struct RenderPlugin;
 
 impl Plugin for RenderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(scale_handler)
-            .add_system(renderable_transform_handler.after(block_destroyed_event_handler));
+        app.add_system(scale_handler.in_set(OnUpdate(AppState::Breakout)))
+            .add_system(
+                renderable_transform_handler
+                    .in_set(OnUpdate(AppState::Breakout))
+                    .after(block_destroyed_event_handler),
+            );
     }
 }
 

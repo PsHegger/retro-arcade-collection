@@ -77,3 +77,6 @@ pub struct ScoreText;
 
 #[derive(Component)]
 pub struct EndGameUIElement;
+
+#[derive(Component)]
+pub struct BreakoutEntity;

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
+use crate::common::AppState;
 use crate::scenes::breakout::components::{Ball, Paddle, Renderable};
 use crate::scenes::breakout::events::RestartGameEvent;
 use crate::scenes::breakout::resources::GameState;
@@ -9,9 +10,10 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(paddle_keyboard_input)
-            .add_system(ball_keyboard_input)
-            .add_system(end_game_keyboard_input);
+        app.add_system(paddle_keyboard_input.in_set(OnUpdate(AppState::Breakout)))
+            .add_system(ball_keyboard_input.in_set(OnUpdate(AppState::Breakout)))
+            .add_system(end_game_keyboard_input.in_set(OnUpdate(AppState::Breakout)))
+            .add_system(back_to_menu_keyboard_input.in_set(OnUpdate(AppState::Breakout)));
     }
 }
 
@@ -64,5 +66,14 @@ pub fn end_game_keyboard_input(
 
     if keys.just_pressed(KeyCode::Space) {
         restart_events.send_default();
+    }
+}
+
+pub fn back_to_menu_keyboard_input(
+    keys: Res<Input<KeyCode>>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    if keys.just_pressed(KeyCode::Escape) {
+        next_state.set(AppState::Menu);
     }
 }
