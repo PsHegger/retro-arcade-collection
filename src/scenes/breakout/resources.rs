@@ -5,20 +5,10 @@ pub struct ResourcesPlugin;
 
 impl Plugin for ResourcesPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ViewportScale::default())
-            .insert_resource(GameState {
-                score: 0,
-                has_game_ended: false,
-            });
-    }
-}
-
-#[derive(Resource)]
-pub struct ViewportScale(pub f32);
-
-impl Default for ViewportScale {
-    fn default() -> Self {
-        ViewportScale(1.0)
+        app.insert_resource(GameState {
+            score: 0,
+            has_game_ended: false,
+        });
     }
 }
 

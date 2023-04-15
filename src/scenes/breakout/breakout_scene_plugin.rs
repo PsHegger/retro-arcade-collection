@@ -7,7 +7,6 @@ use crate::scenes::breakout::event_handlers::EventHandlerPlugin;
 use crate::scenes::breakout::events::{EventsPlugin, RestartGameEvent};
 use crate::scenes::breakout::input::InputPlugin;
 use crate::scenes::breakout::logic::LogicPlugin;
-use crate::scenes::breakout::rendering::RenderPlugin;
 use crate::scenes::breakout::resources::ResourcesPlugin;
 
 pub struct BreakoutScenePlugin;
@@ -17,7 +16,6 @@ impl Plugin for BreakoutScenePlugin {
         app.add_plugin(ResourcesPlugin)
             .add_plugin(EventsPlugin)
             .add_plugin(InputPlugin)
-            .add_plugin(RenderPlugin)
             .add_plugin(EventHandlerPlugin)
             .add_plugin(LogicPlugin)
             .add_system(setup_scene.in_schedule(OnEnter(AppState::Breakout)))

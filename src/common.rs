@@ -1,6 +1,7 @@
 use std::slice::Iter;
 
-use bevy::prelude::{Color, Resource, States};
+use bevy::math::Vec2;
+use bevy::prelude::{Color, Component, Resource, States};
 
 use crate::common::Game::*;
 use crate::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
@@ -65,5 +66,50 @@ impl Default for ViewportSize {
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
         }
+    }
+}
+
+#[derive(Component)]
+pub struct Renderable {
+    pub pos: Vec2,
+    pub size: Vec2,
+    pub target_resolution: Vec2,
+    pub scale_x: bool,
+    pub scale_y: bool,
+    pub translate_x: bool,
+    pub translate_y: bool,
+}
+
+impl Renderable {
+    pub fn left(&self) -> f32 {
+        self.pos.x - self.size.x / 2.0
+    }
+
+    pub fn right(&self) -> f32 {
+        self.pos.x + self.size.x / 2.0
+    }
+
+    pub fn top(&self) -> f32 {
+        self.pos.y + self.size.y / 2.0
+    }
+
+    pub fn bottom(&self) -> f32 {
+        self.pos.y - self.size.y / 2.0
+    }
+
+    pub fn min_x(&self) -> f32 {
+        -(self.target_resolution.x - self.size.x) / 2.0
+    }
+
+    pub fn max_x(&self) -> f32 {
+        (self.target_resolution.x - self.size.x) / 2.0
+    }
+
+    pub fn min_y(&self) -> f32 {
+        -(self.target_resolution.y - self.size.y) / 2.0
+    }
+
+    pub fn max_y(&self) -> f32 {
+        (self.target_resolution.y - self.size.y) / 2.0
     }
 }

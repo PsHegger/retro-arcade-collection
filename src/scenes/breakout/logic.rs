@@ -2,8 +2,8 @@ use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy::time::Time;
 
-use crate::common::AppState;
-use crate::scenes::breakout::components::{Ball, Block, Paddle, Renderable, ScoreText};
+use crate::common::{AppState, Renderable};
+use crate::scenes::breakout::components::{Ball, Block, Paddle, ScoreText};
 use crate::scenes::breakout::constants::{
     SoundType, BALL_DEFAULT_SPEED, BALL_SPEED_INCREASE_SCORE, BALL_SPEED_INCREASE_VALUE,
 };

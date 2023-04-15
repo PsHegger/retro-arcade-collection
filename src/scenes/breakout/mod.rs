@@ -7,5 +7,4 @@ mod event_handlers;
 mod events;
 mod input;
 mod logic;
-mod rendering;
 mod resources;

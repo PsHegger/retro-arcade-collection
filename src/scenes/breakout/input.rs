@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
-use crate::common::AppState;
-use crate::scenes::breakout::components::{Ball, Paddle, Renderable};
+use crate::common::{AppState, Renderable};
+use crate::scenes::breakout::components::{Ball, Paddle};
 use crate::scenes::breakout::events::RestartGameEvent;
 use crate::scenes::breakout::resources::GameState;
 

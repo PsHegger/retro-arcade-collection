@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
-use crate::common::AppState;
+use crate::common::{AppState, Renderable, ViewportSize};
 use crate::constants::FONT_FILE;
 use crate::scenes::breakout::components::*;
 use crate::scenes::breakout::constants::*;
 use crate::scenes::breakout::events::*;
 use crate::scenes::breakout::logic::move_ball;
-use crate::scenes::breakout::resources::{GameState, ViewportScale};
+use crate::scenes::breakout::resources::GameState;
 
 pub struct EventHandlerPlugin;
 
@@ -145,9 +145,9 @@ fn restart_game_event_handler(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut restart_events: EventReader<RestartGameEvent>,
-    entities_to_clear: Query<Entity, Or<(With<Renderable>, With<EndGameUIElement>)>>,
+    entities_to_clear: Query<Entity, With<BreakoutEntity>>,
     mut game_state: ResMut<GameState>,
-    viewport_scale: ResMut<ViewportScale>,
+    viewport_size: Res<ViewportSize>,
 ) {
     if restart_events.is_empty() {
         return;
@@ -159,7 +159,9 @@ fn restart_game_event_handler(
         commands.entity(entity).despawn();
     }
 
-    let scale = viewport_scale.0;
+    let target_resolution = Vec2::new(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
+    let scale = viewport_size.height / PLAY_AREA_HEIGHT;
+    let scale_vec = Vec3::new(scale, scale, 1.0);
     let border_pos = PLAY_AREA_WIDTH / 2.0 + 1.0;
     let paddle_size = Vec2::new(PADDLE_WIDTH_RATIO * PADDLE_HEIGHT, PADDLE_HEIGHT);
     let paddle_pos = Vec2::new(0.0, -(PLAY_AREA_HEIGHT - PADDLE_HEIGHT) / 2.0);
@@ -169,17 +171,21 @@ fn restart_game_event_handler(
         SpriteBundle {
             sprite: Sprite {
                 color: Color::WHITE,
-                custom_size: Some(Vec2::new(1.0, PLAY_AREA_HEIGHT * scale)),
+                custom_size: Some(Vec2::new(1.0, PLAY_AREA_HEIGHT)),
                 ..default()
             },
-            transform: Transform::from_xyz(-border_pos * scale, 0.0, 1.0),
+            transform: Transform::from_xyz(-border_pos * scale, 0.0, 1.0)
+                .with_scale(scale_vec.clone()),
             ..default()
         },
         Renderable {
             pos: Vec2::new(-border_pos, 0.0),
             size: Vec2::new(1.0, PLAY_AREA_HEIGHT),
+            target_resolution: target_resolution.clone(),
             scale_x: false,
             scale_y: true,
+            translate_x: true,
+            translate_y: true,
         },
         BreakoutEntity,
     ));
@@ -188,17 +194,21 @@ fn restart_game_event_handler(
         SpriteBundle {
             sprite: Sprite {
                 color: Color::WHITE,
-                custom_size: Some(Vec2::new(1.0, PLAY_AREA_HEIGHT * scale)),
+                custom_size: Some(Vec2::new(1.0, PLAY_AREA_HEIGHT)),
                 ..default()
             },
-            transform: Transform::from_xyz(PLAY_AREA_WIDTH / 2.0 * scale, 0.0, 1.0),
+            transform: Transform::from_xyz(PLAY_AREA_WIDTH / 2.0 * scale, 0.0, 1.0)
+                .with_scale(scale_vec.clone()),
             ..default()
         },
         Renderable {
             pos: Vec2::new(border_pos, 0.0),
             size: Vec2::new(1.0, PLAY_AREA_HEIGHT),
+            target_resolution: target_resolution.clone(),
             scale_x: false,
             scale_y: true,
+            translate_x: true,
+            translate_y: true,
         },
         BreakoutEntity,
     ));
@@ -206,18 +216,22 @@ fn restart_game_event_handler(
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(paddle_size.clone() * scale),
+                custom_size: Some(paddle_size.clone()),
                 ..default()
             },
             texture: asset_server.load("sprites/breakout/paddle.png"),
-            transform: Transform::from_xyz(paddle_pos.x * scale, paddle_pos.y * scale, 0.0),
+            transform: Transform::from_xyz(paddle_pos.x * scale, paddle_pos.y * scale, 0.0)
+                .with_scale(scale_vec.clone()),
             ..default()
         },
         Renderable {
             pos: paddle_pos,
             size: paddle_size,
+            target_resolution: target_resolution.clone(),
             scale_x: true,
             scale_y: true,
+            translate_x: true,
+            translate_y: true,
         },
         Paddle {
             speed: PADDLE_DEFAULT_SPEED,
@@ -228,18 +242,22 @@ fn restart_game_event_handler(
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(Vec2::new(BALL_SIZE * scale, BALL_SIZE * scale)),
+                custom_size: Some(Vec2::new(BALL_SIZE, BALL_SIZE)),
                 ..default()
             },
             texture: asset_server.load("sprites/breakout/ball.png"),
-            transform: Transform::from_xyz(ball_pos.x * scale, ball_pos.y * scale, 1.0),
+            transform: Transform::from_xyz(ball_pos.x * scale, ball_pos.y * scale, 1.0)
+                .with_scale(scale_vec.clone()),
             ..default()
         },
         Renderable {
             pos: ball_pos,
             size: Vec2::new(BALL_SIZE, BALL_SIZE),
+            target_resolution: target_resolution.clone(),
             scale_x: true,
             scale_y: true,
+            translate_x: true,
+            translate_y: true,
         },
         Ball::default(),
         BreakoutEntity,
@@ -257,18 +275,22 @@ fn restart_game_event_handler(
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        custom_size: Some(block_size * scale),
+                        custom_size: Some(block_size),
                         ..default()
                     },
                     texture: asset_server.load(sprite_path.to_string()),
-                    transform: Transform::from_xyz(pos.x * scale, pos.y * scale, 0.0),
+                    transform: Transform::from_xyz(pos.x * scale, pos.y * scale, 0.0)
+                        .with_scale(Vec3::new(scale, scale, 1.0)),
                     ..default()
                 },
                 Renderable {
                     pos,
                     size: block_size,
+                    target_resolution: target_resolution.clone(),
                     scale_x: true,
                     scale_y: true,
+                    translate_x: true,
+                    translate_y: true,
                 },
                 Block {
                     score: (row_count - row as i32) * 1000,
@@ -295,9 +317,12 @@ fn restart_game_event_handler(
         },
         Renderable {
             pos: Vec2::new(0.0, score_pos_y),
+            target_resolution: target_resolution.clone(),
             size: Default::default(),
             scale_x: false,
             scale_y: false,
+            translate_x: true,
+            translate_y: true,
         },
         ScoreText,
         BreakoutEntity,
