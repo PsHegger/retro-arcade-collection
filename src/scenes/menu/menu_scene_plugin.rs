@@ -4,8 +4,8 @@ use bevy::sprite::Anchor;
 use bevy::text::{Text, Text2dBundle, TextStyle};
 use bevy::utils::default;
 
-use crate::common::{AppState, Game};
-use crate::constants::{FONT_FILE, WINDOW_HEIGHT};
+use crate::common::{AppState, Game, Renderable, ViewportSize};
+use crate::constants::{FONT_FILE, WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::scenes::menu::components::{MenuComponent, MenuGameItem};
 
 pub struct MenuScenePlugin;
@@ -20,23 +20,27 @@ impl Plugin for MenuScenePlugin {
     }
 }
 
-fn setup_menu(mut commands: Commands, assets: Res<AssetServer>) {
+fn setup_menu(mut commands: Commands, assets: Res<AssetServer>, viewport_size: Res<ViewportSize>) {
     let font = assets.load(FONT_FILE.to_string());
     let title_style = TextStyle {
         font: font.clone(),
         font_size: 60.0,
         color: Color::WHITE,
     };
+    let target_resolution = Vec2::new(WINDOW_WIDTH, WINDOW_HEIGHT);
+    let scale = viewport_size.height / WINDOW_HEIGHT;
 
+    let title_pos = Vec2::new(0.0, WINDOW_HEIGHT / 2.0);
     commands.spawn((
         Text2dBundle {
             text: Text::from_section("Retro Arcade\nCollection", title_style.clone())
                 .with_alignment(TextAlignment::Center),
-            transform: Transform::from_xyz(0., WINDOW_HEIGHT / 2.0, 0.0),
+            transform: Transform::from_xyz(title_pos.x * scale, title_pos.y * scale, 0.0),
             text_anchor: Anchor::TopCenter,
             ..default()
         },
         MenuComponent,
+        Renderable::new(title_pos, target_resolution).with_scale(false, false),
     ));
 
     let game_count = Game::supported_games().len();
@@ -71,6 +75,7 @@ fn setup_menu(mut commands: Commands, assets: Res<AssetServer>) {
         } else {
             -1.0 * trans_y
         } - 50.0;
+        let pos = Vec2::new(final_trans_x, final_trans_y);
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
@@ -78,11 +83,13 @@ fn setup_menu(mut commands: Commands, assets: Res<AssetServer>) {
                     custom_size: Some(game_size),
                     ..default()
                 },
-                transform: Transform::from_xyz(final_trans_x, final_trans_y, 0.0),
+                transform: Transform::from_xyz(pos.x * scale, pos.y * scale, 0.0)
+                    .with_scale(Vec3::new(scale, scale, 0.0)),
                 ..default()
             },
             MenuComponent,
             MenuGameItem { game: game.clone() },
+            Renderable::new(pos, target_resolution).with_size(game_size),
         ));
     }
 }
@@ -130,11 +137,13 @@ pub fn game_click_system(
 
 fn game_bounds(transform: &Transform, sprite: &Sprite) -> Option<Rect> {
     sprite.custom_size.map(|size| {
+        let width = size.x * transform.scale.x;
+        let height = size.y * transform.scale.y;
         Rect::new(
-            transform.translation.x - size.x / 2.0,
-            transform.translation.y - size.y / 2.0,
-            transform.translation.x + size.x / 2.0,
-            transform.translation.y + size.y / 2.0,
+            transform.translation.x - width / 2.0,
+            transform.translation.y - height / 2.0,
+            transform.translation.x + width / 2.0,
+            transform.translation.y + height / 2.0,
         )
     })
 }

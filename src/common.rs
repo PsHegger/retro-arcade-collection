@@ -80,7 +80,37 @@ pub struct Renderable {
     pub translate_y: bool,
 }
 
+#[allow(dead_code)]
 impl Renderable {
+    pub fn new(pos: Vec2, target_resolution: Vec2) -> Self {
+        Renderable {
+            pos,
+            size: Default::default(),
+            target_resolution,
+            scale_x: true,
+            scale_y: true,
+            translate_x: true,
+            translate_y: true,
+        }
+    }
+
+    pub fn with_size(mut self, size: Vec2) -> Self {
+        self.size = size;
+        self
+    }
+
+    pub fn with_scale(mut self, scale_x: bool, scale_y: bool) -> Self {
+        self.scale_x = scale_x;
+        self.scale_y = scale_y;
+        self
+    }
+
+    pub fn with_translate(mut self, translate_x: bool, translate_y: bool) -> Self {
+        self.translate_x = translate_x;
+        self.translate_y = translate_y;
+        self
+    }
+
     pub fn left(&self) -> f32 {
         self.pos.x - self.size.x / 2.0
     }
