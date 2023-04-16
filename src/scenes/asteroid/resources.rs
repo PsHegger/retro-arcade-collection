@@ -25,6 +25,10 @@ impl SpaceShooterSpriteSheet {
         self.0.index_of(sprite_name)
     }
 
+    pub fn bounds_of(&self, sprite_name: &str) -> Option<Rect> {
+        self.0.bounds_of(sprite_name)
+    }
+
     pub fn load(
         &mut self,
         asset_server: &Res<AssetServer>,

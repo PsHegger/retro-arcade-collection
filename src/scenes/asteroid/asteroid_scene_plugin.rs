@@ -15,7 +15,8 @@ pub struct AsteroidScenePlugin;
 impl Plugin for AsteroidScenePlugin {
     fn build(&self, app: &mut App) {
         app.configure_set(FrameSet::GameLogic.after(FrameSet::Input))
-            .configure_set(FrameSet::Rendering.after(FrameSet::GameLogic))
+            .configure_set(FrameSet::EventHandling.after(FrameSet::GameLogic))
+            .configure_set(FrameSet::Rendering.after(FrameSet::EventHandling))
             .add_plugin(EventsPlugin)
             .add_plugin(EventHandlersPlugin)
             .add_plugin(GameLogicPlugin)

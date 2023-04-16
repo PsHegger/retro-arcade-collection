@@ -25,7 +25,8 @@ fn init_plugin(app: &mut App) {
     app.add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_startup_system(setup)
         .add_system(update_scale)
-        .add_system(update_fps);
+        .add_system(update_fps)
+        .add_system(update_position.in_base_set(CoreSet::PostUpdate));
 }
 
 #[cfg(not(debug_assertions))]
@@ -64,6 +65,22 @@ fn update_scale(viewport_size: Res<ViewportSize>, mut query: Query<&mut Transfor
             viewport_size.height / 2.0 - FPS_MARGIN_TOP,
             100.0,
         )
+    }
+}
+
+fn update_position(
+    viewport_size: Res<ViewportSize>,
+    mut query: Query<&mut Transform, With<FpsText>>,
+    camera_q: Query<&Transform, (With<Camera>, Without<FpsText>, Changed<Transform>)>,
+) {
+    let Ok(camera) = camera_q.get_single() else { return; };
+
+    for mut transform in query.iter_mut() {
+        transform.translation = Vec3::new(
+            -viewport_size.width / 2.0 + FPS_MARGIN_LEFT + camera.translation.x,
+            viewport_size.height / 2.0 - FPS_MARGIN_TOP + camera.translation.y,
+            100.0,
+        );
     }
 }
 

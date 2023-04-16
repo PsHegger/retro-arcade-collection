@@ -68,6 +68,12 @@ impl TextureAtlasLoader {
             .get(sprite_name)
             .map(|sub_texture| sub_texture.index)
     }
+
+    pub fn bounds_of(&self, sprite_name: &str) -> Option<Rect> {
+        self.sub_textures
+            .get(sprite_name)
+            .map(|sub_texture| sub_texture.bounds)
+    }
 }
 
 #[derive(Debug)]

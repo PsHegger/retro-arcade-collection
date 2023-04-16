@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::common::AppState;
 use crate::scenes::asteroid::components::Ship;
 use crate::scenes::asteroid::constants::{SHIP_ACCELERATION, SHIP_MAX_SPEED, SHIP_ROTATION_SPEED};
+use crate::scenes::asteroid::events::FireLaserEvent;
 use crate::scenes::asteroid::utils::FrameSet;
 
 pub struct InputPlugin;
@@ -20,9 +21,11 @@ impl Plugin for InputPlugin {
 fn ship_keyboard_input_system(
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
+    mut fire_events: EventWriter<FireLaserEvent>,
     mut ship_q: Query<&mut Ship>,
 ) {
     let Ok(mut ship) = ship_q.get_single_mut() else { return; };
+    ship.shoot_cooldown.tick(time.delta());
 
     if keys.any_pressed([KeyCode::A, KeyCode::Left]) {
         ship.rotation += time.delta_seconds() * SHIP_ROTATION_SPEED;
@@ -38,5 +41,10 @@ fn ship_keyboard_input_system(
             new_speed = new_speed.normalize() * SHIP_MAX_SPEED;
         }
         ship.speed = new_speed;
+    }
+
+    if keys.pressed(KeyCode::Space) && ship.shoot_cooldown.finished() {
+        ship.shoot_cooldown.reset();
+        fire_events.send_default();
     }
 }

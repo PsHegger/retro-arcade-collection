@@ -4,5 +4,6 @@ use bevy::prelude::SystemSet;
 pub enum FrameSet {
     Input,
     GameLogic,
+    EventHandling,
     Rendering,
 }

@@ -23,10 +23,14 @@ fn ship_rotation_update_system(mut ship_q: Query<(&mut Transform, &Ship)>) {
 }
 
 fn camera_follow_system(
-    ship_q: Query<&Transform, With<Ship>>,
+    ship_q: Query<&Transform, (With<Ship>, Changed<Transform>)>,
     mut camera_q: Query<&mut Transform, (With<Camera>, Without<Ship>)>,
 ) {
     let Ok(ship_transform) = ship_q.get_single() else { return; };
     let Ok(mut camera_transform) = camera_q.get_single_mut() else { return; };
-    camera_transform.translation = ship_transform.translation;
+    camera_transform.translation = Vec3::new(
+        ship_transform.translation.x,
+        ship_transform.translation.y,
+        camera_transform.translation.z,
+    );
 }
