@@ -20,8 +20,9 @@ pub enum Game {
 
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
 pub enum AppState {
-    #[default]
     Menu,
+    #[default]
+    Asteroid,
     Breakout,
 }
 

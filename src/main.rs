@@ -5,7 +5,7 @@ use crate::common::*;
 use crate::constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::debug_plugin::DebugPlugin;
 use crate::rendering_plugin::RenderingPlugin;
-use crate::scenes::{BreakoutScenePlugin, MenuScenePlugin};
+use crate::scenes::{AsteroidScenePlugin, BreakoutScenePlugin, MenuScenePlugin};
 
 mod common;
 mod constants;
@@ -31,6 +31,7 @@ fn main() {
         }))
         .add_plugin(DebugPlugin)
         .add_plugin(RenderingPlugin)
+        .add_plugin(AsteroidScenePlugin)
         .add_plugin(BreakoutScenePlugin)
         .add_plugin(MenuScenePlugin)
         .add_system(close_on_esc.run_if(is_in_menu))
