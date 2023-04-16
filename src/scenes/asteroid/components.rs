@@ -11,7 +11,12 @@ pub struct Ship {
 }
 
 #[derive(Copy, Clone, Debug, Component, Default)]
-pub struct Asteroid;
+pub struct Asteroid {
+    pub size_class: usize,
+    pub speed: Vec2,
+    pub rotation_speed: f32,
+    pub rotation: f32,
+}
 
 #[derive(Copy, Clone, Debug, Component, Default)]
 pub struct LaserBeam {

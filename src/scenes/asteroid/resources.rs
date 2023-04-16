@@ -3,13 +3,15 @@ use bevy::asset::Handle;
 use bevy::prelude::*;
 use bevy::sprite::TextureAtlas;
 
+use crate::scenes::asteroid::constants::{ASTEROID_DEFAULT_SPAWN_CHANCE, ASTEROID_SPAWN_INTERVAL};
 use crate::texture_atlas_loader::TextureAtlasLoader;
 
 pub struct ResourcesPlugin;
 
 impl Plugin for ResourcesPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(SpaceShooterSpriteSheet::default());
+        app.insert_resource(SpaceShooterSpriteSheet::default())
+            .insert_resource(GameState::default());
     }
 }
 
@@ -44,5 +46,23 @@ impl Default for SpaceShooterSpriteSheet {
             "sprites/asteroid",
             "space_shooter_sheet",
         ))
+    }
+}
+
+#[derive(Resource)]
+pub struct GameState {
+    pub asteroid_spawn_timer: Timer,
+    pub asteroid_spawn_chance: f32,
+}
+
+impl Default for GameState {
+    fn default() -> Self {
+        GameState {
+            asteroid_spawn_timer: Timer::from_seconds(
+                ASTEROID_SPAWN_INTERVAL,
+                TimerMode::Repeating,
+            ),
+            asteroid_spawn_chance: ASTEROID_DEFAULT_SPAWN_CHANCE,
+        }
     }
 }

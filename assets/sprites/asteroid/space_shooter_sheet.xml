@@ -129,7 +129,7 @@ triangles  => sprite triangulation, 3 vertex indices per triangle
     <sprite n="Meteors/meteorBrown_big3.png" x="2" y="575" w="89" h="82"/>
     <sprite n="Meteors/meteorBrown_big4.png" x="95" y="840" w="98" h="96"/>
     <sprite n="Meteors/meteorBrown_med1.png" x="718" y="144" w="43" h="43"/>
-    <sprite n="Meteors/meteorBrown_med3.png" x="298" y="144" w="45" h="40"/>
+    <sprite n="Meteors/meteorBrown_med2.png" x="298" y="144" w="45" h="40"/>
     <sprite n="Meteors/meteorBrown_small1.png" x="329" y="30" w="28" h="28"/>
     <sprite n="Meteors/meteorBrown_small2.png" x="834" y="2" w="29" h="26"/>
     <sprite n="Meteors/meteorBrown_tiny1.png" x="164" y="2" w="18" h="18"/>

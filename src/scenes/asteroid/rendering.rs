@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::common::AppState;
-use crate::scenes::asteroid::components::Ship;
+use crate::scenes::asteroid::components::{Asteroid, Ship};
 use crate::scenes::asteroid::utils::FrameSet;
 
 pub struct RenderingPlugin;
@@ -9,7 +9,11 @@ pub struct RenderingPlugin;
 impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            (ship_rotation_update_system, camera_follow_system)
+            (
+                ship_rotation_update_system,
+                camera_follow_system,
+                asteroid_rotation_update_system,
+            )
                 .in_set(OnUpdate(AppState::Asteroid))
                 .in_set(FrameSet::Rendering),
         );
@@ -19,6 +23,12 @@ impl Plugin for RenderingPlugin {
 fn ship_rotation_update_system(mut ship_q: Query<(&mut Transform, &Ship)>) {
     for (mut transform, ship) in ship_q.iter_mut() {
         transform.rotation = Quat::from_rotation_z(ship.rotation);
+    }
+}
+
+fn asteroid_rotation_update_system(mut asteroid_q: Query<(&mut Transform, &Asteroid)>) {
+    for (mut transform, asteroid) in asteroid_q.iter_mut() {
+        transform.rotation = Quat::from_rotation_z(asteroid.rotation);
     }
 }
 

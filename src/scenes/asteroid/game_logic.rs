@@ -1,8 +1,11 @@
 use bevy::prelude::*;
+use rand::{thread_rng, Rng};
 
 use crate::common::{AppState, ViewportSize};
-use crate::scenes::asteroid::components::{LaserBeam, Ship};
+use crate::scenes::asteroid::components::{Asteroid, LaserBeam, Ship};
 use crate::scenes::asteroid::constants::{LASER_BEAM_DESPAWN_SCALE, LASER_BEAM_SPEED};
+use crate::scenes::asteroid::events::SpawnAsteroidsEvent;
+use crate::scenes::asteroid::resources::GameState;
 use crate::scenes::asteroid::utils::FrameSet;
 
 pub struct GameLogicPlugin;
@@ -10,7 +13,12 @@ pub struct GameLogicPlugin;
 impl Plugin for GameLogicPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            (move_ship_system, move_lasers_system)
+            (
+                move_ship_system,
+                move_lasers_system,
+                move_asteroids_system,
+                asteroid_spawner_system,
+            )
                 .in_set(OnUpdate(AppState::Asteroid))
                 .in_set(FrameSet::GameLogic),
         );
@@ -56,5 +64,30 @@ fn move_lasers_system(
                 commands.entity(entity).despawn();
             }
         }
+    }
+}
+
+fn move_asteroids_system(time: Res<Time>, mut asteroids_q: Query<(&mut Transform, &mut Asteroid)>) {
+    for (mut transform, mut asteroid) in asteroids_q.iter_mut() {
+        transform.translation.x += asteroid.speed.x * time.delta_seconds();
+        transform.translation.y += asteroid.speed.y * time.delta_seconds();
+        asteroid.rotation += asteroid.rotation_speed * time.delta_seconds();
+    }
+}
+
+fn asteroid_spawner_system(
+    time: Res<Time>,
+    mut game_state: ResMut<GameState>,
+    viewport_size: Res<ViewportSize>,
+    mut spawn_asteroids_events: EventWriter<SpawnAsteroidsEvent>,
+) {
+    game_state.asteroid_spawn_timer.tick(time.delta());
+
+    if game_state.asteroid_spawn_timer.just_finished()
+        && thread_rng().gen_bool(game_state.asteroid_spawn_chance as f64)
+    {
+        let safe_radius = viewport_size.width / 2.0 + 200.0;
+        spawn_asteroids_events
+            .send(SpawnAsteroidsEvent::from_count(1).with_safe_radius(safe_radius))
     }
 }
