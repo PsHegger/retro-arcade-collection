@@ -8,4 +8,5 @@ mod events;
 mod game_logic;
 mod input;
 mod rendering;
+mod resources;
 mod utils;

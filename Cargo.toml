@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 bevy = "0.10.1"
 rand = "0.8.5"
+serde = { version = "1.0.160", features = ["derive"] }
+quick-xml = { version= "0.28.1", features = ["serialize"] }
 
 [profile.dev]
 opt-level = 1

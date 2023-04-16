@@ -12,6 +12,7 @@ mod constants;
 mod debug_plugin;
 mod rendering_plugin;
 mod scenes;
+mod texture_atlas_loader;
 
 const CLEAR_COLOR: ClearColor = ClearColor(Color::BLACK);
 

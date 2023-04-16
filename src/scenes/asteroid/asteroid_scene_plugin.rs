@@ -7,6 +7,7 @@ use crate::scenes::asteroid::events::{EventsPlugin, StartGameEvent};
 use crate::scenes::asteroid::game_logic::GameLogicPlugin;
 use crate::scenes::asteroid::input::InputPlugin;
 use crate::scenes::asteroid::rendering::RenderingPlugin;
+use crate::scenes::asteroid::resources::{ResourcesPlugin, SpaceShooterSpriteSheet};
 use crate::scenes::asteroid::utils::FrameSet;
 
 pub struct AsteroidScenePlugin;
@@ -20,11 +21,18 @@ impl Plugin for AsteroidScenePlugin {
             .add_plugin(GameLogicPlugin)
             .add_plugin(InputPlugin)
             .add_plugin(RenderingPlugin)
+            .add_plugin(ResourcesPlugin)
             .add_system(close_on_esc)
             .add_system(setup_scene.in_schedule(OnEnter(AppState::Asteroid)));
     }
 }
 
-fn setup_scene(mut start_events: EventWriter<StartGameEvent>) {
+fn setup_scene(
+    mut start_events: EventWriter<StartGameEvent>,
+    asset_server: Res<AssetServer>,
+    texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut space_shooter_sprite_sheet: ResMut<SpaceShooterSpriteSheet>,
+) {
+    space_shooter_sprite_sheet.load(&asset_server, texture_atlases);
     start_events.send_default();
 }
